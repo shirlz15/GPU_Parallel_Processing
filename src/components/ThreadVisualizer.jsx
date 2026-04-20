@@ -16,57 +16,42 @@ export default function ThreadVisualizer() {
     setRunning(true)
     setCompletedCount(0)
 
-    // Reset all threads
-    setThreads(Array.from({ length: THREAD_COUNT }, (_, i) => ({ id: i, state: 'ready', progress: 0 })))
+    let temp = Array.from({ length: THREAD_COUNT }, (_, i) => ({ id: i, state: 'idle', progress: 0 }));
+    temp = temp.map(t => ({ ...t, state: "ready" }));
+    setThreads([...temp]);
 
-    let done = 0
+    let i = 0;
 
-    // Stagger thread starts in small batches (warps of 4)
-    const starts = Array.from({ length: THREAD_COUNT }, (_, i) => i)
-    starts.forEach(i => {
-      const delay = Math.floor(i / 4) * 50 // Warp delay
-      const duration = 2000 + Math.random() * 2000
+    intervalsRef.current.forEach(clearInterval)
+    intervalsRef.current = [];
 
-      const startTimer = setTimeout(() => {
+    const interval = setInterval(() => {
+      if (i >= temp.length) {
+        clearInterval(interval);
+        setRunning(false);
+        return;
+      }
+
+      const currentIndex = i;
+      setThreads(prev => {
+        const next = [...prev];
+        next[currentIndex] = { ...next[currentIndex], state: "running", progress: 50 };
+        return next;
+      });
+
+      setTimeout(() => {
         setThreads(prev => {
-          const next = [...prev]
-          next[i] = { ...next[i], state: 'running' }
-          return next
-        })
+          const next = [...prev];
+          next[currentIndex] = { ...next[currentIndex], state: "done", progress: 100 };
+          return next;
+        });
+        setCompletedCount(c => c + 1);
+      }, 500);
 
-        const steps = 20
-        const stepInterval = duration / steps
-        let step = 0
+      i++;
+    }, 100);
 
-        const progressInterval = setInterval(() => {
-          step++
-          const progress = (step / steps) * 100
-          setThreads(prev => {
-            const next = [...prev]
-            next[i] = { ...next[i], progress }
-            return next
-          })
-
-          if (step >= steps) {
-            clearInterval(progressInterval)
-            setThreads(prev => {
-              const next = [...prev]
-              next[i] = { ...next[i], state: 'done', progress: 100 }
-              return next
-            })
-            done++
-            setCompletedCount(done)
-            if (done === THREAD_COUNT) {
-              setRunning(false)
-            }
-          }
-        }, stepInterval)
-
-        intervalsRef.current.push(progressInterval)
-      }, delay)
-
-      intervalsRef.current.push(startTimer)
-    })
+    intervalsRef.current.push(interval);
   }
 
   const resetVisualization = () => {
