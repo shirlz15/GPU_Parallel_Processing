@@ -34,17 +34,23 @@ export default function FloatingPointDemo({ addLog }) {
   const [expr, setExpr] = useState('0.1 + 0.2')
   const [result, setResult] = useState(null)
 
-  const compute = () => {
-    const actual = evalSafe(expr)
-    if (actual === null) {
-      addLog('Invalid expression in float demo')
-      return
+  const compute = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/float", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ expression: expr })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      setResult({ actual: data.result, expected: data.precise, diff: data.error, expr, explanation: data.explanation })
+      addLog(`Float API success: ${expr}`)
+    } catch (err) {
+      addLog(`Float demo error: ${err.message}`)
+      setResult(null)
     }
-    const expected = parseExpected(expr)
-    const numExpected = parseFloat(expected) || actual
-    const diff = Math.abs(actual - numExpected)
-    setResult({ actual, expected, diff, expr })
-    addLog(`Float demo: ${expr} = ${actual} (expected ≈ ${expected}, diff = ${diff.toFixed(20)})`)
   }
 
   return (
@@ -199,8 +205,8 @@ export default function FloatingPointDemo({ addLog }) {
 
                 <div className="p-3 rounded-lg bg-neon-blue/5 border border-neon-blue/10">
                   <p className="text-xs text-slate-400 font-inter leading-relaxed">
-                    <span className="text-neon-blue font-bold">Fix: </span>
-                    Use <code className="text-yellow-400">Math.abs(a - b) {'<'} 1e-9</code> for comparison instead of <code className="text-red-400">a === b</code>
+                    <span className="text-neon-blue font-bold">Explanation from API: </span>
+                    {result.explanation || "IEEE 754 precision constraints"}
                   </p>
                 </div>
               </motion.div>

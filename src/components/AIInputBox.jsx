@@ -105,23 +105,44 @@ export default function AIInputBox({ addLog }) {
     setHistory(prev => [{ q, r: null }, ...prev].slice(0, 5))
     addLog(`AI Query: "${q}"`)
 
-    await new Promise(r => setTimeout(r, 800 + Math.random() * 600))
-
-    const ans = findAnswer(q)
-    const res = ans || {
-      title: 'GPU Computing AI',
-      content: `I found relevant info about GPU computing for your query: "${q}". Try asking about: GPU, CPU vs GPU, CUDA, OpenCL, precision issues, AMAT, memory, or speedup.`,
-      tags: ['General'],
+    try {
+      const apiRes = await fetch('http://localhost:5000/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: q })
+      })
+      const data = await apiRes.json()
+      const res = {
+        title: data.title || 'AI Response',
+        content: data.answer,
+        tags: ['Backend', 'API'],
+      }
+      setResponse(res)
+      setHistory(prev => {
+        const updated = [...prev]
+        updated[0] = { q, r: res }
+        return updated
+      })
+      addLog(`AI Response: ${res.title}`)
+    } catch {
+      // Fallback to local KB if backend unavailable
+      const ans = findAnswer(q)
+      const res = ans || {
+        title: 'GPU Computing AI (Offline)',
+        content: `Backend unavailable. Try asking: GPU, CPU vs GPU, CUDA, precision, AMAT, speedup.`,
+        tags: ['Offline'],
+      }
+      setResponse(res)
+      setHistory(prev => {
+        const updated = [...prev]
+        updated[0] = { q, r: res }
+        return updated
+      })
+      addLog(`AI Response (offline): ${res.title}`)
+    } finally {
+      setLoading(false)
+      setQuery('')
     }
-    setResponse(res)
-    setHistory(prev => {
-      const updated = [...prev]
-      updated[0] = { q, r: res }
-      return updated
-    })
-    addLog(`AI Response: ${res.title}`)
-    setLoading(false)
-    setQuery('')
   }
 
   return (
