@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Replit chat-uploaded screenshots / pasted text (not used by the app)
+attached_assets/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
