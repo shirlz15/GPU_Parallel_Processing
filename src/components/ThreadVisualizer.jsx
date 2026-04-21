@@ -16,46 +16,64 @@ export default function ThreadVisualizer() {
     setRunning(true)
     setCompletedCount(0)
 
-    let temp = Array.from({ length: THREAD_COUNT }, (_, i) => ({ id: i, state: 'idle', progress: 0 }));
-    temp = temp.map(t => ({ ...t, state: "ready" }));
-    setThreads([...temp]);
-
-    let i = 0;
-
     intervalsRef.current.forEach(clearInterval)
-    intervalsRef.current = [];
+    intervalsRef.current = []
 
-    const interval = setInterval(() => {
-      if (i >= temp.length) {
-        clearInterval(interval);
-        setRunning(false);
-        return;
+    setThreads(Array.from({ length: THREAD_COUNT }, (_, i) => ({ id: i, state: 'ready', progress: 0 })))
+
+    // Simulate GPU warps: launch in parallel waves of 8 threads each.
+    // Every thread independently progresses with its own random duration.
+    const WARP_SIZE = 8
+    let launched = 0
+    let done = 0
+
+    const launchWarp = () => {
+      const start = launched
+      const end = Math.min(launched + WARP_SIZE, THREAD_COUNT)
+      launched = end
+
+      for (let idx = start; idx < end; idx++) {
+        const duration = 600 + Math.random() * 1400 // 0.6–2.0s per thread
+        const tickMs = 40
+        const step = (tickMs / duration) * 100
+
+        setThreads(prev => {
+          const next = [...prev]
+          next[idx] = { ...next[idx], state: 'running', progress: 0 }
+          return next
+        })
+
+        const tick = setInterval(() => {
+          setThreads(prev => {
+            const next = [...prev]
+            const t = next[idx]
+            if (!t || t.state === 'done') return prev
+            const p = Math.min(100, t.progress + step)
+            next[idx] = { ...t, progress: p }
+            if (p >= 100) {
+              next[idx].state = 'done'
+              clearInterval(tick)
+              done += 1
+              setCompletedCount(done)
+              if (done >= THREAD_COUNT) setRunning(false)
+            }
+            return next
+          })
+        }, tickMs)
+        intervalsRef.current.push(tick)
       }
 
-      const currentIndex = i;
-      setThreads(prev => {
-        const next = [...prev];
-        next[currentIndex] = { ...next[currentIndex], state: "running", progress: 50 };
-        return next;
-      });
+      if (launched < THREAD_COUNT) {
+        const t = setTimeout(launchWarp, 250)
+        intervalsRef.current.push(t)
+      }
+    }
 
-      setTimeout(() => {
-        setThreads(prev => {
-          const next = [...prev];
-          next[currentIndex] = { ...next[currentIndex], state: "done", progress: 100 };
-          return next;
-        });
-        setCompletedCount(c => c + 1);
-      }, 500);
-
-      i++;
-    }, 100);
-
-    intervalsRef.current.push(interval);
+    launchWarp()
   }
 
   const resetVisualization = () => {
-    intervalsRef.current.forEach(clearInterval)
+    intervalsRef.current.forEach(id => { clearInterval(id); clearTimeout(id) })
     intervalsRef.current = []
     setRunning(false)
     setCompletedCount(0)

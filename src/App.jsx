@@ -15,7 +15,13 @@ import Particles from './components/Particles'
 function App() {
   const [darkMode, setDarkMode] = useState(true)
   const [simResults, setSimResults] = useState(null)
+  const [simHistory, setSimHistory] = useState([])
   const [logs, setLogs] = useState([])
+
+  const recordResults = (data) => {
+    setSimResults(data)
+    setSimHistory(prev => [...prev, data].slice(-12))
+  }
 
   const addLog = (msg) => {
     const time = new Date().toLocaleTimeString()
@@ -70,7 +76,7 @@ function App() {
 
         <section id="simulation">
           <Simulation 
-            onResults={setSimResults} 
+            onResults={recordResults} 
             addLog={addLog} 
           />
         </section>
@@ -88,7 +94,7 @@ function App() {
         </section>
 
         <section id="charts">
-          <Charts simResults={simResults} />
+          <Charts simResults={simResults} simHistory={simHistory} />
         </section>
 
         <section id="thread-viz">

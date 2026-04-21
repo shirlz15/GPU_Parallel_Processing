@@ -1,0 +1,196 @@
+I have uploaded a multi-page GPU Visualizer web project with advanced UI screens.
+
+Pages included:
+1. AMAT Simulator (sliders for hit time, miss rate, miss penalty)
+2. Floating Point Visualizer (math expression input + compute button)
+3. Performance Insights (CPU vs GPU charts)
+4. Live Thread Visualizer (grid with launch/reset)
+5. AI Knowledge Console (input + ask button)
+6. Interactive Simulation (array size slider, precision type, operation, run button)
+7. Additional page (not uploaded): takes array size from user and performs computation
+
+--------------------------------------------------
+
+YOUR TASK:
+
+Convert this into a FULLY FUNCTIONAL FULL-STACK WEB APPLICATION.
+
+DO NOT redesign UI.
+ONLY add full functionality, backend logic, and real interactivity.
+
+--------------------------------------------------
+
+TECH STACK:
+
+- Backend: Node.js + Express
+- Real-time: Socket.IO (for simulations, threads, updates)
+- Frontend: Use existing HTML/CSS/JS
+- Charts: Use Chart.js or similar
+- Maintain a central simulation state in backend
+
+--------------------------------------------------
+
+GLOBAL REQUIREMENTS:
+
+- Every button, slider, and input must WORK
+- No static UI
+- All interactions must trigger real computation
+- Results must update instantly in UI
+- Project must run with ONE command
+
+--------------------------------------------------
+
+1. AMAT SIMULATOR:
+
+Inputs:
+- Hit Time
+- Miss Rate
+- Miss Penalty
+
+Functionality:
+- Compute:
+  AMAT = Hit_Time + (Miss_Rate × Miss_Penalty)
+- Update output instantly when sliders move
+- Show interpretation dynamically
+
+--------------------------------------------------
+
+2. FLOATING POINT VISUALIZER:
+
+- User enters expression (e.g., 0.1 + 0.2)
+- On button click:
+  - Evaluate expression
+  - Show result
+  - Show floating-point precision issue
+  - Optional: show binary representation
+
+Backend:
+- Safely parse and compute expression
+
+--------------------------------------------------
+
+3. PERFORMANCE INSIGHTS:
+
+- Generate dynamic data for:
+  - CPU vs GPU execution time
+  - Precision error over iterations
+
+Backend:
+- Simulate computation time based on:
+  - array size
+  - precision type
+  - operation
+
+Frontend:
+- Update charts dynamically
+
+--------------------------------------------------
+
+4. LIVE THREAD VISUALIZER:
+
+- "Launch Threads":
+  - Simulate multiple threads (like GPU)
+  - Each block changes state:
+    READY → RUNNING → DONE
+
+Backend:
+- Simulate thread execution using timers
+- Send updates continuously via Socket.IO
+
+- "Reset":
+  - Reset all thread states
+
+--------------------------------------------------
+
+5. AI KNOWLEDGE CONSOLE:
+
+- User types query
+- On "Ask":
+  - Backend returns response (mock or real)
+
+Display response dynamically
+
+--------------------------------------------------
+
+6. INTERACTIVE SIMULATION (IMPORTANT):
+
+Inputs:
+- Array Size (slider)
+- Precision Type (float 32 / double 64)
+- Operation (addition / multiplication)
+- Run Simulation button
+
+Backend logic:
+- Generate arrays of given size
+- Perform operation:
+  - Addition → sum of array
+  - Multiplication → product (or batched to avoid overflow)
+
+Simulate:
+- CPU execution time (slower loop)
+- GPU execution time (parallel simulated faster time)
+
+Return:
+- Execution times
+- Result
+- Performance difference
+
+Frontend:
+- Display results in output panel
+
+--------------------------------------------------
+
+7. ARRAY INPUT PAGE (IMPORTANT):
+
+- User enters array size manually
+- Backend:
+  - Generate random array
+  - Perform computation (sum/multiply)
+  - Return result + execution time
+
+--------------------------------------------------
+
+8. REAL-TIME ENGINE:
+
+- Use WebSockets for:
+  - Thread updates
+  - Simulation updates
+- Use efficient loops (setInterval or requestAnimationFrame)
+
+--------------------------------------------------
+
+9. FILE STRUCTURE:
+
+- server.js
+- package.json
+- public/
+    - index.html
+    - script.js
+    - style.css
+
+--------------------------------------------------
+
+10. PERFORMANCE:
+
+- Debounce sliders
+- Avoid UI lag
+- Optimize loops
+
+--------------------------------------------------
+
+11. FINAL OUTPUT:
+
+- Fully working application
+- All pages interactive
+- No broken buttons
+- Real backend logic
+- Clean structured code
+
+--------------------------------------------------
+
+IMPORTANT:
+
+Explain:
+- What backend logic you added
+- How each feature works
+- How frontend connects to backend

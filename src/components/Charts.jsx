@@ -47,15 +47,21 @@ const chartOptions = (title) => ({
   },
 })
 
-export default function Charts({ simResults }) {
-  const arraySizes = ['100', '1K', '10K', '100K', '500K', '1M']
+function fmtSize(n) {
+  if (n >= 1e6) return (n / 1e6).toFixed(n % 1e6 ? 1 : 0) + 'M'
+  if (n >= 1e3) return (n / 1e3).toFixed(n % 1e3 ? 1 : 0) + 'K'
+  return String(n)
+}
 
-  const barData = {
-    labels: arraySizes,
+export default function Charts({ simResults, simHistory = [] }) {
+  const hasReal = simHistory.length > 0
+
+  const barData = hasReal ? {
+    labels: simHistory.map((r, i) => `#${i + 1} (${fmtSize(r.size || r.threads)})`),
     datasets: [
       {
         label: 'CPU Time (ms)',
-        data: [0.08, 0.8, 8, 80, 400, 800],
+        data: simHistory.map(r => r.cpuTime),
         backgroundColor: 'rgba(248, 113, 113, 0.7)',
         borderColor: '#f87171',
         borderWidth: 1,
@@ -63,8 +69,28 @@ export default function Charts({ simResults }) {
       },
       {
         label: 'GPU Time (ms)',
-        data: [0.01, 0.06, 0.6, 5, 24, 48],
+        data: simHistory.map(r => r.gpuTime),
         backgroundColor: 'rgba(0, 212, 255, 0.7)',
+        borderColor: '#00D4FF',
+        borderWidth: 1,
+        borderRadius: 6,
+      },
+    ],
+  } : {
+    labels: ['100', '1K', '10K', '100K', '500K', '1M'],
+    datasets: [
+      {
+        label: 'CPU Time (ms) — sample',
+        data: [0.08, 0.8, 8, 80, 400, 800],
+        backgroundColor: 'rgba(248, 113, 113, 0.4)',
+        borderColor: '#f87171',
+        borderWidth: 1,
+        borderRadius: 6,
+      },
+      {
+        label: 'GPU Time (ms) — sample',
+        data: [0.01, 0.06, 0.6, 5, 24, 48],
+        backgroundColor: 'rgba(0, 212, 255, 0.4)',
         borderColor: '#00D4FF',
         borderWidth: 1,
         borderRadius: 6,
@@ -72,11 +98,35 @@ export default function Charts({ simResults }) {
     ],
   }
 
-  const errorData = {
+  const errorData = hasReal ? {
+    labels: simHistory.map((_, i) => `#${i + 1}`),
+    datasets: [
+      {
+        label: 'Precision Error (%)',
+        data: simHistory.map(r => r.error),
+        borderColor: '#f59e0b',
+        backgroundColor: 'rgba(245,158,11,0.1)',
+        tension: 0.4,
+        fill: true,
+        pointBackgroundColor: '#f59e0b',
+        pointRadius: 4,
+      },
+      {
+        label: 'Speedup (×)',
+        data: simHistory.map(r => r.speedup),
+        borderColor: '#A855F7',
+        backgroundColor: 'rgba(168,85,247,0.1)',
+        tension: 0.4,
+        fill: true,
+        pointBackgroundColor: '#A855F7',
+        pointRadius: 4,
+      },
+    ],
+  } : {
     labels: ['1', '2', '3', '4', '5', '6', '7', '8'],
     datasets: [
       {
-        label: 'Float32 Error',
+        label: 'Float32 Error — sample',
         data: [0.0001, 0.00012, 0.00009, 0.00015, 0.00011, 0.00013, 0.0001, 0.00014],
         borderColor: '#f59e0b',
         backgroundColor: 'rgba(245,158,11,0.1)',
@@ -86,7 +136,7 @@ export default function Charts({ simResults }) {
         pointRadius: 4,
       },
       {
-        label: 'Float64 Error',
+        label: 'Float64 Error — sample',
         data: [2e-10, 3e-10, 1.5e-10, 4e-10, 2.5e-10, 3.5e-10, 2e-10, 3e-10],
         borderColor: '#A855F7',
         backgroundColor: 'rgba(168,85,247,0.1)',
