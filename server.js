@@ -1,6 +1,10 @@
 import express from "express";
 import cors from "cors";
 import * as math from "mathjs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 app.use(cors());
@@ -105,6 +109,17 @@ app.post("/ai", (req, res) => {
   res.json({ answer: result.answer, title: result.title });
 });
 
-app.listen(5000, () => {
-  console.log("🚀 Backend running on port 5000");
+const isProd = process.env.NODE_ENV === "production";
+
+if (isProd) {
+  app.use(express.static(path.join(__dirname, "dist")));
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "dist", "index.html"));
+  });
+}
+
+const PORT = process.env.PORT || (isProd ? 5000 : 3001);
+const HOST = isProd ? "0.0.0.0" : "127.0.0.1";
+app.listen(PORT, HOST, () => {
+  console.log(`🚀 Server running on ${HOST}:${PORT}`);
 });

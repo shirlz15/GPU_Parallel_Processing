@@ -106,7 +106,7 @@ export default function AIInputBox({ addLog }) {
     addLog(`AI Query: "${q}"`)
 
     try {
-      const apiRes = await fetch('http://localhost:5000/ai', {
+      const apiRes = await fetch('/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: q })

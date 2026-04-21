@@ -16,7 +16,7 @@ export default function Simulation({ onResults, addLog }) {
     addLog(`Connecting to backend: size=${arraySize}, expr=${expression}`)
 
     try {
-      const res = await fetch("http://localhost:5000/compute", {
+      const res = await fetch("/compute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
